@@ -14,6 +14,10 @@ public class MenuManager : MonoBehaviour {
 	private Transform mainCamera;
 	private string muteText = "Mute";
 	
+	private int roundDuration = 60;
+	private float roundStart;
+	private bool is_roundStarted = false;
+	
 	void Start(){
 		mainCamera = GameObject.Find ("MainCamera").transform;
 	}
@@ -56,6 +60,20 @@ public class MenuManager : MonoBehaviour {
 		else if(PlayerControls.is_gameOn){
 			if (GUI.Button(new Rect(0,0,Screen.width/20,Screen.height/20), "Menu")){
 				is_menu = true;
+			}
+			GUI.skin.box.fontSize = 30;
+			GUI.Box(new Rect(Screen.width - Screen.width/5,0,Screen.width/5,Screen.height/5), "Time Remaining");
+			GUI.skin.box.fontSize = 60;
+			GUI.Box(new Rect(Screen.width - Screen.width/5,Screen.height/5,Screen.width/5,Screen.height/5), roundDuration.ToString());
+			GUI.skin.box.fontSize =15;
+			if(roundDuration < 1){
+				transform.GetComponent<NetworkManager>().EndRound();
+				roundDuration = 60;
+				PlayerControls.is_gameOn = false;
+			}
+			else if(lastTickTime + 1 < Time.time){
+				lastTickTime = Time.time;
+				roundDuration--;
 			}
 		}
 		else{

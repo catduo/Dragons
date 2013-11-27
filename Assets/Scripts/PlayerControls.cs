@@ -37,7 +37,7 @@ public class PlayerControls : MonoBehaviour {
 	
 	[RPC] void SentJoystick(int player, float vertical, float horizontal){
 		if(is_gameOn){
-			playerObjects[player].GetComponent<Dragon>().turningAngle = -horizontal;
+			playerObjects[player].GetComponent<Dragon>().direction = new Vector2(horizontal, vertical);
 		}
 	}
 	
@@ -63,7 +63,7 @@ public class PlayerControls : MonoBehaviour {
 	}
 	
 	[RPC] public void InstantiatePlayerObject(int player, float primaryR, float primaryG, float primaryB, float secondaryR, float secondaryG, float secondaryB, string playerName){
-		Color primary = new Color(primaryR, primaryG, primaryB, 0.6F);
+		Color primary = new Color(primaryR, primaryG, primaryB, 0.5F);
 		Color secondary = new Color(secondaryR, secondaryG, secondaryB, 1);
 		playerObjects[player].GetComponent<Dragon>().SetMyPlayer(player, primary, secondary, playerName);
 	}

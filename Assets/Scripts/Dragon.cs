@@ -4,10 +4,9 @@ using System.Collections;
 public class Dragon : MonoBehaviour {
 	
 	public int segmentCount = 2;
-	private int segmentLag = 10;
-	private float speed = 2;
-	private float turningSpeed = 2;
-	public float turningAngle = 0;
+	private int segmentLag = 6;
+	private float speed = 4;
+	public Vector2 direction;
 	public GameObject segmentObject;
 	public bool is_attacking = false;
 	public float attackDuration = 2;
@@ -49,7 +48,9 @@ public class Dragon : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-		head.Rotate(0,0,turningSpeed * turningAngle);
+		if(direction != Vector2.zero){
+			head.Rotate(direction.x, direction.y, 0);
+		}
 		head.rigidbody.velocity = head.up * speed;
 		segmentPositions[thisSegment] = head.position;
 		segmentRotations[thisSegment] = head.rotation;
@@ -128,7 +129,6 @@ public class Dragon : MonoBehaviour {
 	}
 	
 	public void Hit(){
-		Debug.Log ("Hit");
 		if(segmentCount > 2){
 			segmentCount--;
 			Destroy(segments[segmentCount].gameObject);

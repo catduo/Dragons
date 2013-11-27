@@ -23,7 +23,7 @@ public class NetworkManager : MonoBehaviour {
 			Application.ExternalCall("GetGameName");
 		}
 		else{
-			GetGameName("");
+			GetGameName("aaaa");
 		}
     }    
 	
@@ -96,6 +96,7 @@ public class NetworkManager : MonoBehaviour {
 				GameObject newPlayerObject = (GameObject) GameObject.Instantiate(playerObject, new Vector3(-10,0,0), Quaternion.identity);
 				newPlayerObject.transform.RotateAround(Vector3.zero, Vector3.forward, 360 - 360 / readyPlayers * thisReadyPlayer);
 				newPlayerObject.transform.Rotate(new Vector3(0, 0, - 360 + 360 / readyPlayers * thisReadyPlayer));
+				newPlayerObject.transform.parent = GameObject.Find ("PlayerObjects").transform;
 				tempPlayerObjects[i] = newPlayerObject.transform;
 				networkView.RPC ("PlayerObjectCreated", playerList[i]);
 				thisReadyPlayer++;
@@ -125,6 +126,7 @@ public class NetworkManager : MonoBehaviour {
 	}
 	
 	[RPC] public void EndRound(){
+		GameObject.Find("MainCamera").GetComponent<GameManager>().EndRound();
 		PlayerControls.is_gameOn = false;
 		is_thisGameAgain = false;
 		networkView.RPC ("EndOfRound", RPCMode.Others, PlayerControls.controllingPlayer);
