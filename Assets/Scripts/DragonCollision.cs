@@ -12,10 +12,17 @@ public class DragonCollision : MonoBehaviour {
 	}
 	
 	void OnTriggerEnter(Collider other){
-		if(other.tag == "Respawn"){
+		if(other.name == "Food(Clone)"){
 			transform.parent.SendMessage("AddSegment");
 			GameObject foodItem = (GameObject) GameObject.Instantiate(foodObject, new Vector3((Random.value - 0.5F)*12, (Random.value - 0.5F)*9, 0), Quaternion.identity);
 			foodItem.transform.parent = modifiers;
+			Destroy(other.gameObject);
+		}
+		if(other.name == "BigFood(Clone)"){
+			transform.parent.SendMessage("AddSegment");
+			transform.parent.SendMessage("AddSegment");
+			transform.parent.SendMessage("AddSegment");
+			transform.parent.SendMessage("AddSegment");
 			Destroy(other.gameObject);
 		}
 		else if(other.name == "Snout"){}
@@ -28,12 +35,23 @@ public class DragonCollision : MonoBehaviour {
 	void OnCollisionEnter(Collision collision){
 		if(collision.transform.parent.name == "Bounds"){
 			transform.parent.SendMessage("Hit", SendMessageOptions.DontRequireReceiver);
-			transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, 180 - transform.eulerAngles.z * 2);
+			if(collision.transform.name == "Top"){
+				transform.Rotate(transform.eulerAngles.x, transform.eulerAngles.y, 180 - transform.eulerAngles.z * 2);
+			}
+			if(collision.transform.name == "Left"){
+				transform.Rotate(transform.eulerAngles.x, transform.eulerAngles.y, 180 - (transform.eulerAngles.z - 90) * 2);
+			}
+			if(collision.transform.name == "Right"){
+				transform.Rotate(transform.eulerAngles.x, transform.eulerAngles.y, 180 - (transform.eulerAngles.z - 270) * 2);
+			}
+			if(collision.transform.name == "Bottom"){
+				transform.Rotate(transform.eulerAngles.x, transform.eulerAngles.y, 180 - (transform.eulerAngles.z - 180) * 2);
+			}
 			rigidbody.angularVelocity = Vector3.zero;
 		}
 		if(collision.transform.name == "Head"){
 			transform.parent.SendMessage("Hit", SendMessageOptions.DontRequireReceiver);
-			transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, 180 - transform.eulerAngles.z * 2);
+			transform.Rotate(transform.eulerAngles.x, transform.eulerAngles.y, Vector3.Angle(collision.transform.position, transform.position));
 			rigidbody.angularVelocity = Vector3.zero;
 		}
 	}

@@ -23,43 +23,36 @@ public class PlayerControls : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if(is_gameOn){
-			for(int i = 0; i < playerObjects.Length; i++){
-				if(playerObjects[i].position.x < -16){
-					transform.GetComponent<NetworkManager>().EndRound();
-				}
-			}
-		}
 	}
 	
 	void GetInput(){
 	}
 	
-	[RPC] void SentJoystick(int player, float vertical, float horizontal){
+	[RPC] void SentJoystick(int player, float vertical, float horizontal, string side){
 		if(is_gameOn){
 			playerObjects[player].GetComponent<Dragon>().direction = new Vector2(horizontal, vertical);
 		}
 	}
 	
-	[RPC] void SentDPad(int player, float vertical, float horizontal){
+	[RPC] void SentDPad(int player, float vertical, float horizontal, string side){
 	}
 	
-	[RPC] void SentDiagonalDPad(int player, float vertical, float horizontal){
+	[RPC] void SentDiagonalDPad(int player, float vertical, float horizontal, string side){
 	}
 	
-	[RPC] void SentButton1(int player, string buttonPress){
+	[RPC] void SentButton1(int player, string buttonPress, string side){
 		if(is_gameOn){
-			playerObjects[player].GetComponent<Dragon>().is_attacking = true;
+			playerObjects[player].GetComponent<Dragon>().Attack();
 		}
 	}
 	
-	[RPC] void SentButton2(int player, string buttonPress){
+	[RPC] void SentButton2(int player, string buttonPress, string side){
 	}
 	
-	[RPC] void SentButton3Up(int player, string buttonPress){
+	[RPC] void SentButton3Up(int player, string buttonPress, string side){
 	}
 	
-	[RPC] void SentButton3UpHold(int player, string buttonPress, float holdTime){
+	[RPC] void SentButton3UpHold(int player, string buttonPress, float holdTime, string side){
 	}
 	
 	[RPC] public void InstantiatePlayerObject(int player, float primaryR, float primaryG, float primaryB, float secondaryR, float secondaryG, float secondaryB, string playerName){

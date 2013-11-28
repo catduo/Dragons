@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour {
 	private float foodSpawnTime;
 	private float foodSpawnLag = 0;
 	public GameObject foodObject;
+	public GameObject bigFoodObject;
 	private Transform modifiers;
 	private Transform playerObjects;
 	
@@ -24,6 +25,10 @@ public class GameManager : MonoBehaviour {
 				foodSpawnLag = 10 / NetworkManager.playerList.Length;
 				GameObject foodItem = (GameObject) GameObject.Instantiate(foodObject, new Vector3((Random.value - 0.5F)*24, (Random.value - 0.5F)*18, 0), Quaternion.identity);
 				foodItem.transform.parent = modifiers;
+				if(Random.value < 0.1F){
+					GameObject bigFoodItem = (GameObject) GameObject.Instantiate(bigFoodObject, new Vector3((Random.value - 0.5F)*24, (Random.value - 0.5F)*18, 0), Quaternion.identity);
+					bigFoodItem.transform.parent = modifiers;
+				}
 			}
 		}
 	}

@@ -9,8 +9,8 @@ public class Dragon : MonoBehaviour {
 	public Vector2 direction;
 	public GameObject segmentObject;
 	public bool is_attacking = false;
-	public float attackDuration = 2;
-	public float attackTime;
+	private float attackDuration = 0.5F;
+	private float attackTime;
 	
 	private NetworkPlayer myPlayer;
 	private int playerNumber;
@@ -48,10 +48,25 @@ public class Dragon : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-		if(direction != Vector2.zero){
-			head.Rotate(direction.x, direction.y, 0);
+		if(is_attacking){
+			if(attackTime + attackDuration < Time.time){
+				is_attacking = false;
+				fire.particleSystem.Stop();
+			}
+			head.rigidbody.velocity = head.up * speed * 2;
 		}
-		head.rigidbody.velocity = head.up * speed;
+		else{
+			Debug.Log ((direction));
+			if(direction != Vector2.zero){
+				if((direction.y > 0)){
+					head.eulerAngles = new Vector3(head.eulerAngles.x, head.eulerAngles.y, - Vector2.Angle(new Vector2(1,0), direction));
+				}
+				else{
+					head.eulerAngles = new Vector3(head.eulerAngles.x, head.eulerAngles.y, Vector2.Angle(new Vector2(1,0), direction));
+				}
+			}
+			head.rigidbody.velocity = head.up * speed;
+		}
 		segmentPositions[thisSegment] = head.position;
 		segmentRotations[thisSegment] = head.rotation;
 		for(int i = 1; i < segmentCount; i++){
@@ -63,9 +78,6 @@ public class Dragon : MonoBehaviour {
 				segments[i].position = segmentPositions[thisSegment - i * segmentLag];
 				segments[i].rotation = segmentRotations[thisSegment - i * segmentLag];
 			}
-		}
-		if(Input.GetKeyDown("a")){
-			AddSegment();
 		}
 		thisSegment++;
 		if(thisSegment >= 1000){
@@ -133,5 +145,11 @@ public class Dragon : MonoBehaviour {
 			segmentCount--;
 			Destroy(segments[segmentCount].gameObject);
 		}
+	}
+		
+	public void Attack(){
+		is_attacking = true;
+		attackTime = Time.time;
+		fire.particleSystem.Play ();
 	}
 }
