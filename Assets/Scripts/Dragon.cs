@@ -4,7 +4,7 @@ using System.Collections;
 public class Dragon : MonoBehaviour {
 	
 	public int segmentCount = 2;
-	private int segmentLag = 6;
+	private int segmentLag = 3;
 	private float speed = 4;
 	public Vector2 direction;
 	public GameObject segmentObject;
@@ -48,40 +48,43 @@ public class Dragon : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-		if(is_attacking){
-			if(attackTime + attackDuration < Time.time){
-				is_attacking = false;
-				fire.particleSystem.Stop();
-			}
-			head.rigidbody.velocity = head.up * speed * 2;
-		}
-		else{
-			Debug.Log ((direction));
-			if(direction != Vector2.zero){
-				if((direction.y > 0)){
-					head.eulerAngles = new Vector3(head.eulerAngles.x, head.eulerAngles.y, - Vector2.Angle(new Vector2(1,0), direction));
+		if(PlayerControls.is_gameOn){
+			head.rigidbody.angularVelocity = Vector3.zero;
+			if(is_attacking){
+				if(attackTime + attackDuration < Time.time){
+					is_attacking = false;
+					fire.particleSystem.Stop();
 				}
-				else{
-					head.eulerAngles = new Vector3(head.eulerAngles.x, head.eulerAngles.y, Vector2.Angle(new Vector2(1,0), direction));
-				}
-			}
-			head.rigidbody.velocity = head.up * speed;
-		}
-		segmentPositions[thisSegment] = head.position;
-		segmentRotations[thisSegment] = head.rotation;
-		for(int i = 1; i < segmentCount; i++){
-			if(thisSegment - i * segmentLag < 0){
-				segments[i].position = segmentPositions[thisSegment - i * segmentLag + 1000];
-				segments[i].rotation = segmentRotations[thisSegment - i * segmentLag + 1000];
+				head.rigidbody.velocity = head.up * speed * 2;
 			}
 			else{
-				segments[i].position = segmentPositions[thisSegment - i * segmentLag];
-				segments[i].rotation = segmentRotations[thisSegment - i * segmentLag];
+				Debug.Log ((direction));
+				if(direction != Vector2.zero){
+					if((direction.y > 0)){
+						head.eulerAngles = new Vector3(head.eulerAngles.x, head.eulerAngles.y, - Vector2.Angle(new Vector2(1,0), direction));
+					}
+					else{
+						head.eulerAngles = new Vector3(head.eulerAngles.x, head.eulerAngles.y, Vector2.Angle(new Vector2(1,0), direction));
+					}
+				}
+				head.rigidbody.velocity = head.up * speed;
 			}
-		}
-		thisSegment++;
-		if(thisSegment >= 1000){
-			thisSegment=0;
+			segmentPositions[thisSegment] = head.position;
+			segmentRotations[thisSegment] = head.rotation;
+			for(int i = 1; i < segmentCount; i++){
+				if(thisSegment - i * segmentLag < 0){
+					segments[i].position = segmentPositions[thisSegment - i * segmentLag + 1000];
+					segments[i].rotation = segmentRotations[thisSegment - i * segmentLag + 1000];
+				}
+				else{
+					segments[i].position = segmentPositions[thisSegment - i * segmentLag];
+					segments[i].rotation = segmentRotations[thisSegment - i * segmentLag];
+				}
+			}
+			thisSegment++;
+			if(thisSegment >= 1000){
+				thisSegment=0;
+			}
 		}
 	}
 	
