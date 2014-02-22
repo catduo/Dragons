@@ -12,21 +12,18 @@ public enum TouchStyle{
 }
 
 public class PlayerControls : MonoBehaviour {
-	
+	/*
 	static public Transform[] playerObjects = new Transform[0];
+	static public Transform[] statusObjects = new Transform[0];
 	static public bool is_gameOn = false;
 	static public int controllingPlayer = 0;
 	
-	// Use this for initialization
-	void Start () {
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	}
-	
-	void GetInput(){
-	}
+	public static GameObject chosenArena;
+	public GameObject chooseArena;
+	public GameObject arena1;
+	public GameObject arena2;
+	public GameObject arena3;
+	public GameObject arena4;
 	
 	[RPC] void SentJoystick(int player, float vertical, float horizontal, string side){
 		if(is_gameOn){
@@ -56,67 +53,41 @@ public class PlayerControls : MonoBehaviour {
 	}
 	
 	[RPC] public void InstantiatePlayerObject(int player, float primaryR, float primaryG, float primaryB, float secondaryR, float secondaryG, float secondaryB, string playerName){
-		Color primary = new Color(primaryR, primaryG, primaryB, 0.5F);
+		Color primary = new Color(primaryR, primaryG, primaryB, 1);
 		Color secondary = new Color(secondaryR, secondaryG, secondaryB, 1);
-		playerObjects[player].GetComponent<Dragon>().SetMyPlayer(player, primary, secondary, playerName);
+		if(playerObjects[player] != null){
+			playerObjects[player].GetComponent<Dragon>().SetMyPlayer(player, primary, secondary, playerName);
+		}
+		statusObjects[player].GetComponent<Status>().SetMyPlayer(player, primary, secondary, playerName);
 	}
 	
 	
 	[RPC] public void SetPlayerNumber(int player){}
-	[RPC] public void SetControls(int lControls, int rControls){}
+	[RPC] public void SetControls(int lControls, string lControlsDescription, int rControls, string rControlsDescription){}
 	[RPC] void PlayerObjectCreated(){}
 	[RPC] void EndOfRound(int player){}
 	[RPC] void NewGame(){}
 	[RPC] void SentBasicButtonTap(int playerNumber, string button){
 		switch(button){
 		case "Join Game":
-			if(MenuManager.is_countdown){
-				SentBasicButtons("Leave Game", "Cancel Countdown", "Prepare to Play!", NetworkManager.playerList[playerNumber]);
-			}
-			else{
-				SentBasicButtons("Leave Game", "Start Game", "Begin the Game?", NetworkManager.playerList[playerNumber]);
-			}
+			statusObjects[playerNumber].GetComponent<Status>().status.text = "O";
+			statusObjects[playerNumber].GetComponent<Status>().status.color = Color.green;
+			SentBasicButtons("Start Game", "Hit Start Game to Begin the Round", NetworkManager.playerList[playerNumber]);
 			transform.GetComponent<NetworkManager>().PlayerReady(playerNumber);
-			break;
-			
-		case "Leave Game":
-			if(MenuManager.is_countdown){
-				SentBasicButtons("Join Game", "Cancel Countdown", "Ready to Play?", NetworkManager.playerList[playerNumber]);
-			}
-			else{
-				SentBasicButtons("Join Game", "Start Game", "Ready to Play?", NetworkManager.playerList[playerNumber]);
-			}
-			break;
-			
-		case "Cancel Countdown":
-			for(int i = 0; i < NetworkManager.readyList.Length; i++){
-				if(NetworkManager.readyList[i]){
-					SentBasicButtons("Leave Game", "Start Game", "Begin the Game?", NetworkManager.playerList[i]);
-				}
-				else{
-					SentBasicButtons("Join Game", "Start Game", "Ready to Play?", NetworkManager.playerList[i]);
-				}
-			}
-			MenuManager.is_countdown = false;
-			MenuManager.timer = MenuManager.countdownTime;
+			transform.GetComponent<NetworkManager>().StartRound();
 			break;
 			
 		case "Start Game":
-			for(int i = 0; i < NetworkManager.readyList.Length; i++){
-				if(NetworkManager.readyList[i]){
-					SentBasicButtons("Leave Game", "Cancel Countdown", "Prepare to Play!", NetworkManager.playerList[i]);
-				}
-				else{
-					SentBasicButtons("Join Game", "Cancel Countdown", "Ready to Play?", NetworkManager.playerList[i]);
-				}
-			}
-			MenuManager.lastTickTime = Time.time;
+			statusObjects[playerNumber].GetComponent<Status>().status.text = "O";
+			statusObjects[playerNumber].GetComponent<Status>().status.color = Color.green;
 			MenuManager.is_countdown = true;
+			MenuManager.is_choosingArena = false;
+			MenuManager.lastTickTime = Time.time;
 			transform.GetComponent<NetworkManager>().StartRound();
 			break;
 			
 		case "Play Again!":
-			SentBasicButtons("Join Game", "Start Game", "Ready to Play?", NetworkManager.playerList[playerNumber]);
+			SentBasicButtonTap(playerNumber, "Join Game");
 			break;
 			
 		case "Play a Different Game":
@@ -124,11 +95,11 @@ public class PlayerControls : MonoBehaviour {
 			break;
 			
 		case "Sumo":
-			transform.GetComponent<NetworkManager>().NewUrl("http://beta.catduo.com/sumo/game.unity3d");
+			transform.GetComponent<NetworkManager>().NewUrl("http://jovios.com/sumo/game.unity3d");
 			break;
 			
 		case "Dragons":
-			transform.GetComponent<NetworkManager>().NewUrl("http://beta.catduo.com/dragon/game.unity3d");
+			transform.GetComponent<NetworkManager>().NewUrl("http://jovios.com/dragon/game.unity3d");
 			break;
 			
 		default:
@@ -136,31 +107,31 @@ public class PlayerControls : MonoBehaviour {
 		}
 	}
 	public void SentBasicButtons (string question, NetworkPlayer player){
-		networkView.RPC ("SetBasicButtons", player, "", "", "", "", "", "", "", "", question);
+		networkView.RPC ("SetButtons", player, "basic", question, "", "", "", "", "", "", "", "", "");
 	}
 	public void SentBasicButtons (string button1, string question, NetworkPlayer player){
-		networkView.RPC ("SetBasicButtons", player, button1, "", "", "", "", "", "", "", question);
+		networkView.RPC ("SetButtons", player, "basic", question,  "", button1, "", "", "", "", "", "", "");
 	}
 	public void SentBasicButtons (string button1, string button2, string question, NetworkPlayer player){
-		networkView.RPC ("SetBasicButtons", player, button1, button2, "", "", "", "", "", "", question);
+		networkView.RPC ("SetButtons", player, "basic", question,  "", button1, button2, "", "", "", "", "", "");
 	}
 	public void SentBasicButtons (string button1, string button2, string button3, string question, NetworkPlayer player){
-		networkView.RPC ("SetBasicButtons", player, button1, button2, button3, "", "", "", "", "", question);
+		networkView.RPC ("SetButtons", player, "basic", question,  "", button1, button2, button3, "", "", "", "", "");
 	}
 	public void SentBasicButtons (string button1, string button2, string button3, string button4, string question, NetworkPlayer player){
-		networkView.RPC ("SetBasicButtons", player, button1, button2, button3, button4, "", "", "", "", question);
+		networkView.RPC ("SetButtons", player, "basic", question,  "", button1, button2, button3, button4, "", "", "", "");
 	}
 	public void SentBasicButtons (string button1, string button2, string button3, string button4, string button5, string question, NetworkPlayer player){
-		networkView.RPC ("SetBasicButtons", player, button1, button2, button3, button4, button5, "", "", "", question);
+		networkView.RPC ("SetButtons", player, "basic", question,  "", button1, button2, button3, button4, button5, "", "", "");
 	}
 	public void SentBasicButtons (string button1, string button2, string button3, string button4, string button5, string button6, string question, NetworkPlayer player){
-		networkView.RPC ("SetBasicButtons", player, button1, button2, button3, button4, button5, button6, "", "", question);
+		networkView.RPC ("SetButtons", player, "basic", question,  "", button1, button2, button3, button4, button5, button6, "", "");
 	}
 	public void SentBasicButtons (string button1, string button2, string button3, string button4, string button5, string button6, string button7, string question, NetworkPlayer player){
-		networkView.RPC ("SetBasicButtons", player, button1, button2, button3, button4, button5, button6, button7, "", question);
+		networkView.RPC ("SetButtons", player, "basic", question,  "", button1, button2, button3, button4, button5, button6, button7, "");
 	}
 	public void SentBasicButtons (string button1, string button2, string button3, string button4, string button5, string button6, string button7, string button8, string question, NetworkPlayer player){
-		networkView.RPC ("SetBasicButtons", player, button1, button2, button3, button4, button5, button6, button7, button8, question);
+		networkView.RPC ("SetButtons", player, "basic", question,  "", button1, button2, button3, button4, button5, button6, button7, button8);
 	}
-	[RPC] void SetBasicButtons (string button1, string button2, string button3, string button4, string button5, string button6, string button7, string button8, string question){}
-}
+	[RPC] void SetButtons (string type, string question, string actionWord, string button1, string button2, string button3, string button4, string button5, string button6, string button7, string button8){}
+*/} 

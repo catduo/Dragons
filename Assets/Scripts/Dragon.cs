@@ -12,8 +12,8 @@ public class Dragon : MonoBehaviour {
 	private float attackDuration = 0.5F;
 	private float attackTime;
 	
-	private NetworkPlayer myPlayer;
-	private int playerNumber;
+	private JoviosUserID myPlayer;
+	public int playerNumber;
 	public string playerName;
 	private string playerCharacter;
 	private TextMesh playerCharacterMesh;
@@ -32,9 +32,11 @@ public class Dragon : MonoBehaviour {
 	private Transform head;
 	private Transform segment1;
 	private int thisSegment;
+	private Jovios jovios;
 
 	// Use this for initialization
 	void Start () {
+		jovios = GameManager.jovios;
 		head = transform.FindChild("Head");
 		segment1 = transform.FindChild("Segment");
 		fire = head.FindChild("Fire");
@@ -43,12 +45,13 @@ public class Dragon : MonoBehaviour {
 		rightGill = head.FindChild("RightGill");
 		leftGill = head.FindChild("LeftGill");
 		snout = head.FindChild("Snout");
-		segments = new Transform [2] {head, segment1};
+		segments = new Transform [2] {head, segment1};		
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-		if(PlayerControls.is_gameOn){
+		direction = jovios.GetPlayer(myPlayer).GetInput("left").GetDirection();
+		if(MenuManager.gameState == GameState.GameOn){
 			head.rigidbody.angularVelocity = Vector3.zero;
 			if(is_attacking){
 				if(attackTime + attackDuration < Time.time){
@@ -58,13 +61,12 @@ public class Dragon : MonoBehaviour {
 				head.rigidbody.velocity = head.up * speed * 2;
 			}
 			else{
-				Debug.Log ((direction));
 				if(direction != Vector2.zero){
 					if((direction.y > 0)){
-						head.eulerAngles = new Vector3(head.eulerAngles.x, head.eulerAngles.y, - Vector2.Angle(new Vector2(1,0), direction));
+						head.eulerAngles = new Vector3(head.eulerAngles.x, head.eulerAngles.y, Vector2.Angle(new Vector2(1,0), direction) - 90);
 					}
 					else{
-						head.eulerAngles = new Vector3(head.eulerAngles.x, head.eulerAngles.y, Vector2.Angle(new Vector2(1,0), direction));
+						head.eulerAngles = new Vector3(head.eulerAngles.x, head.eulerAngles.y, - Vector2.Angle(new Vector2(1,0), direction) - 90);
 					}
 				}
 				head.rigidbody.velocity = head.up * speed;
@@ -117,18 +119,27 @@ public class Dragon : MonoBehaviour {
 		segments = newSegments;
 	}
 	
-	public void SetMyPlayer (int player, Color primaryColor, Color secondaryColor, string newPlayerName){
-		myPlayer = NetworkManager.playerList[player];
-		playerNumber = player;
-		primary = primaryColor;
-		secondary = secondaryColor;
-		playerName = newPlayerName;
-		if(newPlayerName.Length>0){
-			playerCharacter = newPlayerName[0].ToString();
+	public void SetMyPlayer (JoviosPlayer playerInfo){
+		myPlayer = playerInfo.GetUserID();
+		playerNumber = playerInfo.GetPlayerNumber();
+		primary = playerInfo.GetColor("primary");
+		secondary = playerInfo.GetColor("secondary");
+		playerName = playerInfo.GetPlayerName();
+		if(playerName.Length>0){
+			playerCharacter = playerName[0].ToString();
 		}
 		else{
 			playerCharacter = "";
 		}
+		head = transform.FindChild("Head");
+		segment1 = transform.FindChild("Segment");
+		fire = head.FindChild("Fire");
+		rightEye = head.FindChild("RightEye");
+		leftEye = head.FindChild("LeftEye");
+		rightGill = head.FindChild("RightGill");
+		leftGill = head.FindChild("LeftGill");
+		snout = head.FindChild("Snout");
+		segments = new Transform [2] {head, segment1};
 		head.renderer.material.color = primary;
 		snout.renderer.material.color = primary;
 		rightEye.particleSystem.startColor = secondary;
@@ -141,6 +152,7 @@ public class Dragon : MonoBehaviour {
 		segment1.renderer.material.color = primary;
 		segment1.FindChild("Character").GetComponent<TextMesh>().color = secondary;
 		segment1.FindChild("Character").GetComponent<TextMesh>().text = playerCharacter;
+		head.GetComponent<DragonCollision>().playerNumber = playerNumber;
 	}
 	
 	public void Hit(){
@@ -154,5 +166,9 @@ public class Dragon : MonoBehaviour {
 		is_attacking = true;
 		attackTime = Time.time;
 		fire.particleSystem.Play ();
+	}
+
+	void OnDisable(){
+		jovios.GetPlayer(myPlayer).RemovePlayerObject(gameObject);
 	}
 }

@@ -1,25 +1,36 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+public enum GameState{
+	GameOn,
+	ChooseArena,
+	Menu,
+	Countdown,
+	GameEnd
+}
+
 public class MenuManager : MonoBehaviour {
 	
-	static public bool is_menu = true;
-	static public bool is_gameOver = false;
+	public static GameState gameState = GameState.ChooseArena;
+	public static GameState previousGameState = GameState.Menu;
 	static public bool is_credits = false;
-	static public bool is_countdown = false;
 	static public bool is_loadingNewGame = false;
 	static public int countdownTime = 3;
-	static public int timer = 0;
+	static public int timer = countdownTime;
 	static public float lastTickTime;
 	public Font font;
 	private Transform mainCamera;
 	private string muteText = "Mute";
 	
-	static public int roundDuration = 60;
+	static public int roundDuration = 120;
 	private float roundStart;
+	
 	private bool is_roundStarted = false;
+	private Jovios jovios;
 	
 	void Start(){
+		jovios = GameManager.jovios;
+		//iPhoneSettings.screenCanDarken = false;
 		mainCamera = GameObject.Find ("MainCamera").transform;
 	}
 	
@@ -31,66 +42,71 @@ public class MenuManager : MonoBehaviour {
 		GUI.skin.button.fontSize = Mathf.RoundToInt((Camera.main.WorldToScreenPoint(new Vector2(1,1)).x-Camera.main.WorldToScreenPoint(new Vector2(0,0)).x)*0.7F);
 		GUI.skin.textArea.fontSize = Mathf.RoundToInt((Camera.main.WorldToScreenPoint(new Vector2(1,1)).x-Camera.main.WorldToScreenPoint(new Vector2(0,0)).x)*0.7F);
 		GUI.skin.textField.fontSize = Mathf.RoundToInt((Camera.main.WorldToScreenPoint(new Vector2(1,1)).x-Camera.main.WorldToScreenPoint(new Vector2(0,0)).x)*0.7F);
-		if(is_countdown){
-			GUI.Box(new Rect(Screen.width - Screen.width/2.5F,0,Screen.width/5,Screen.height/5), "Game Starts In");
-			GUI.skin.box.fontSize *= 2;
-			GUI.Box(new Rect(Screen.width - Screen.width/2.5F,Screen.height/5,Screen.width/5,Screen.height/5), countdownTime.ToString());
-			GUI.skin.box.fontSize /= 2;
-			if(timer < 1){
-				transform.GetComponent<NetworkManager>().StartRound();
-				timer = roundDuration;
-				is_countdown = false;
-				is_menu = false;
-				PlayerControls.is_gameOn = true;
-				for(int i = 0; i < NetworkManager.readyList.Length; i++){
-					if(NetworkManager.readyList[i]){
-						networkView.RPC ("SetControls", NetworkManager.playerList[i], 0,3);
-					}
-					else{
-						transform.GetComponent<PlayerControls>().SentBasicButtons("Waiting for round to complete.", NetworkManager.playerList[i]);
-					}
-					NetworkManager.readyList[i] = false;
-				}
-			}
-			else if(lastTickTime + 1 < Time.time){
-				lastTickTime = Time.time;
-				timer--;
-			}
-		}
-		if (is_loadingNewGame){
-			GUI.Box(new Rect(Screen.width - Screen.width/5,0,Screen.width/5,Screen.height/5), "Loading New Game");
-		}
-		else if(is_menu){
-			GUI.Box(new Rect(Screen.width - Screen.width/5,0,Screen.width/5,Screen.height/5), "Waiting for Players\n" + NetworkManager.playerList.Length.ToString() + " in Lobby");
-			GUI.Box(new Rect(Screen.width - Screen.width/5,Screen.height/5,Screen.width/5,Screen.height/5), "Players\n" + NetworkManager.readyCount.ToString() + " Ready");
+		switch(gameState){
+		case GameState.Menu:
 			GUI.Box(new Rect(Screen.width/2 - Screen.width/5,0,Screen.width/2.5F,Screen.height/20), "Menu");
 			if(!Screen.fullScreen){
 				if (GUI.Button(new Rect(Screen.width/2-Screen.width/10,Screen.height/10,Screen.width/5,Screen.height/5), "FullScreen")){
 					Screen.fullScreen = !Screen.fullScreen;
 				}
 			}
-			if(Application.isWebPlayer){
-				if (GUI.Button(new Rect(Screen.width/2-Screen.width/10,Screen.height/10*4,Screen.width/5,Screen.height/5), "Reload Player")){
-					transform.GetComponent<NetworkManager>().NewUrl(Application.absoluteURL);
-				}
+			if (GUI.Button(new Rect(Screen.width/2-Screen.width/20,Screen.height - Screen.height/20,Screen.width/10,Screen.height/20), "Menu")){
+				gameState = previousGameState;
 			}
-			if (GUI.Button(new Rect(0,0,Screen.width/10,Screen.height/20), "Menu")){
-				is_menu = false;
+			break;
+			
+			
+		case GameState.ChooseArena:
+			GUI.Box(new Rect(Screen.width - Screen.width/2.5F,0,Screen.width/5,Screen.height/5), "Choose Arena");
+			if (GUI.Button(new Rect(Screen.width/2-Screen.width/20,Screen.height - Screen.height/20,Screen.width/10,Screen.height/20), "Menu")){
+				gameState = GameState.Menu;
+				previousGameState = GameState.ChooseArena;
 			}
-		}
-		else if(PlayerControls.is_gameOn){
-			if (GUI.Button(new Rect(0,0,Screen.width/10,Screen.height/20), "Menu")){
-				is_menu = true;
-			}
-			GUI.Box(new Rect(Screen.width - Screen.width/5,0,Screen.width/5,Screen.height/5), "Time Remaining");
+			break;
+			
+			
+		case GameState.Countdown:
+			GUI.Box(new Rect(Screen.width - Screen.width/2.5F,0,Screen.width/5,Screen.height/5), "Game Starts In");
 			GUI.skin.box.fontSize *= 2;
-			GUI.Box(new Rect(Screen.width - Screen.width/5,Screen.height/5,Screen.width/5,Screen.height/5), roundDuration.ToString());
+			GUI.Box(new Rect(Screen.width - Screen.width/2.5F,Screen.height/5,Screen.width/5,Screen.height/5), timer.ToString());
 			GUI.skin.box.fontSize /= 2;
 			if(timer < 1){
-				transform.GetComponent<NetworkManager>().EndRound();
+				GameManager.StartRound();
+				timer = roundDuration;
+				gameState = GameState.GameOn;
+			}
+			else if(lastTickTime + 1 < Time.time){
+				lastTickTime = Time.time;
+				timer--;
+			}
+			if (GUI.Button(new Rect(Screen.width/2-Screen.width/20,Screen.height - Screen.height/20,Screen.width/10,Screen.height/20), "Menu")){
+				gameState = GameState.Menu;
+				previousGameState = GameState.Countdown;
+			}
+			break;
+			
+			
+		case GameState.GameOn:
+			GUI.Box(new Rect(Screen.width - Screen.width/5,0,Screen.width/5,Screen.height/5), "Time Remaining");
+			GUI.skin.box.fontSize *= 2;
+			GUI.Box(new Rect(Screen.width - Screen.width/5,Screen.height/5,Screen.width/5,Screen.height/5), timer.ToString());
+			GUI.skin.box.fontSize /= 2;
+			if(timer < 1){
 				timer = countdownTime;
-				PlayerControls.is_gameOn = false;
-				is_menu = true;
+				gameState = GameState.GameEnd;
+				for(int i = 0; i < jovios.GetPlayerCount(); i++){
+					JoviosControllerStyle controllerStyle = new JoviosControllerStyle();
+					controllerStyle.SetBasicButtons("Would you like to play this game again?", new string[] {"Play Again!"});
+					jovios.SetControls(jovios.GetPlayer(i).GetUserID(), controllerStyle);
+				}
+				Transform po = GameObject.Find ("PlayerObjects").transform;
+				for(int i = 0; i < po.childCount; i++){
+					Destroy(po.GetChild(i).gameObject);
+				}
+				Transform mo = GameObject.Find ("Modifiers").transform;
+				for(int i = 0; i < mo.childCount; i++){
+					Destroy(mo.GetChild(i).gameObject);
+				}
 			}
 			else if(lastTickTime + 1 < Time.time){
 				lastTickTime = Time.time;
@@ -101,18 +117,26 @@ public class MenuManager : MonoBehaviour {
 					Screen.fullScreen = !Screen.fullScreen;
 				}
 			}
-			if(Application.isWebPlayer){
-				if (GUI.Button(new Rect(Screen.width/2.5F,0,Screen.width/5,Screen.height/20), "Reload Player")){
-					transform.GetComponent<NetworkManager>().NewUrl(Application.absoluteURL);
-				}
+			if (GUI.Button(new Rect(Screen.width/2-Screen.width/20,Screen.height - Screen.height/20,Screen.width/10,Screen.height/20), "Menu")){
+				gameState = GameState.Menu;
+				previousGameState = GameState.GameOn;
 			}
+			break;
+			
+			
+		case GameState.GameEnd:
+			GUI.Box(new Rect(Screen.width - Screen.width/5,0,Screen.width/5,Screen.height/5), "The Winner is " + jovios.GetPlayer(GameManager.winner[0]).GetPlayerName());
+			break;
+			
+			
+		default:
+			Debug.Log ("Game State Broken");
+			break;
 		}
-		else{
-			if (GUI.Button(new Rect(0,0,Screen.width/10,Screen.height/20), "Menu")){
-				is_menu = true;
-			}
+		if (is_loadingNewGame){
+			GUI.Box(new Rect(Screen.width - Screen.width/5,0,Screen.width/5,Screen.height/5), "Loading New Game");
 		}
-		GUI.Box(new Rect(0,Screen.height/20,Screen.width/10,Screen.height/20), NetworkManager.gameName);
+		GUI.Box(new Rect(0,Screen.height - Screen.height/8,Screen.width/5,Screen.height/8), "Game Code\n" + jovios.GetGameName());
 	}
 		
 	
