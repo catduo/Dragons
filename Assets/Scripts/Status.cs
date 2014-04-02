@@ -35,8 +35,7 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 		status.color = Color.red;
 		status.text = "X";
 		JoviosControllerStyle controllerStyle = new JoviosControllerStyle();
-		controllerStyle.SetBasicButtons("Ready to Play?", new string[] {"Play!"});
-		jovios.SetControls(jovios.GetPlayer(myPlayer).GetUserID(), controllerStyle);
+		MenuManager.SetControls(jovios.GetPlayer(myPlayer).GetUserID(), ControllerStyles.PlayAgain);
 		if(!GameManager.score.ContainsKey(myPlayer.GetIDNumber())){
 			GameManager.score.Add(jovios.GetPlayer(myPlayer).GetUserID().GetIDNumber(), 0);
 		}
@@ -60,7 +59,7 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 		segment1.renderer.material.color = primary;
 		segment1.FindChild("Character").GetComponent<TextMesh>().color = secondary;
 		segment1.FindChild("Character").GetComponent<TextMesh>().text = playerCharacter;
-		if(playerInfo.GetPlayerObject() != null){
+		if(playerInfo.GetPlayerObject(0) != null){
 			jovios.GetPlayer(myPlayer).GetPlayerObject().GetComponent<Dragon>().SetMyPlayer(playerInfo);
 		}
 	}
@@ -75,17 +74,19 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 	void OnButton (string button){
 		JoviosControllerStyle controllerStyle = new JoviosControllerStyle();
 		switch(button){
-		case "Join Game":
+			
+		case "Play Again!":
 			switch(MenuManager.gameState){
 			case GameState.Countdown:
 				Ready ();
 				StartRound();
 				break;
-			
+				
 			case GameState.ChooseArena:
 				Ready ();
-				controllerStyle.SetBasicButtons("Ready to Play?", new string[] {"Play!"});
+				MenuManager.SetControls(myPlayer, ControllerStyles.PlayAgain);
 				jovios.SetControls(myPlayer, controllerStyle);
+				GameManager.ChooseArena(1);
 				break;
 				
 			case GameState.GameOn:
@@ -94,30 +95,17 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 				break;
 				
 			case GameState.GameEnd:
-				controllerStyle.SetBasicButtons("Would you like to play this game again?", new string[] {"Play Again!"});
-				jovios.SetControls(myPlayer, controllerStyle);
+				if(MenuManager.gameState != GameState.ChooseArena && MenuManager.gameState != GameState.Countdown){
+					GameManager.EndRound();
+				}
+				Ready ();
+				MenuManager.SetControls(myPlayer, ControllerStyles.Snake);
+				GameManager.ChooseArena(1);
 				break;
 				
 			case GameState.Menu:
 				break;
 			}
-			break;
-			
-		case "Play Again!":
-			if(MenuManager.gameState != GameState.ChooseArena && MenuManager.gameState != GameState.Countdown){
-				GameManager.EndRound();
-			}
-			Ready ();
-			JoviosControllerStyle controllerStyle1 = new JoviosControllerStyle();
-			controllerStyle1.AddAbsoluteJoystick("left", "Move Character");
-			controllerStyle1.AddButton1("right", "Select Level", "Select Level");
-			jovios.SetControls(myPlayer, controllerStyle1);
-			break;
-			
-		case "Play!":
-			Ready ();
-			StartRound();
-			GameManager.ChooseArena(chosenArena);
 			break;
 			
 		case "Attack":
@@ -133,7 +121,7 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 	public void Ready(){
 		status.text = "O";
 		status.color = Color.green;
-		if(jovios.GetPlayer(myPlayer).GetPlayerObject() == null){
+		if(jovios.GetPlayer(myPlayer).GetPlayerObject(0) == null){
 			GameObject newPlayerObject = (GameObject) GameObject.Instantiate(playerObject, new Vector3(0,-4,0), Quaternion.identity);
 			newPlayerObject.transform.RotateAround(Vector3.zero, Vector3.forward, 360 - 360 / (playerNumber + 1) * jovios.GetPlayerCount());
 			newPlayerObject.transform.Rotate(new Vector3(0, 0, - 360 + 360 / (playerNumber + 1) * jovios.GetPlayerCount()));
@@ -147,16 +135,13 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 	public void StartRound(){
 		status.text = "0";
 		status.color = Color.white;
-		JoviosControllerStyle controllerStyle = new JoviosControllerStyle();
-		controllerStyle.AddAbsoluteJoystick("left", "Move Dragon");
-		controllerStyle.AddButton1("right", "Fire Breath Dash Attack!", "Attack");
-		jovios.SetControls(jovios.GetPlayer(myPlayer).GetUserID(), controllerStyle);
+		MenuManager.SetControls(jovios.GetPlayer(myPlayer).GetUserID(), ControllerStyles.Snake);
 	}
 	
 	public void Reset(int newPlayerNumber){
 		playerNumber = newPlayerNumber;
-		if(jovios.GetPlayer(myPlayer).GetPlayerObject() != null){
-			jovios.GetPlayer(myPlayer).GetPlayerObject().GetComponent<Dragon>().playerNumber = newPlayerNumber;
+		if(jovios.GetPlayer(myPlayer).GetPlayerObject(0) != null){
+			jovios.GetPlayer(myPlayer).GetPlayerObject(0).GetComponent<Dragon>().playerNumber = newPlayerNumber;
 		}
 		if(playerNumber < 4){
 			transform.localPosition = new Vector3(-4.5F + (playerNumber -1) * 4, -1.75F, 0);

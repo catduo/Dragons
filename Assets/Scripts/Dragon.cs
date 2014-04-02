@@ -50,7 +50,9 @@ public class Dragon : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-		direction = jovios.GetPlayer(myPlayer).GetInput("left").GetDirection();
+		if(jovios.GetPlayer(myPlayer).GetControllerStyle().GetDirection("left") != null){
+			direction = jovios.GetPlayer(myPlayer).GetControllerStyle().GetDirection("left").GetDirection();
+		}
 		if(MenuManager.gameState == GameState.GameOn){
 			head.rigidbody.angularVelocity = Vector3.zero;
 			if(is_attacking){

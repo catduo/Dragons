@@ -9,6 +9,11 @@ public enum GameState{
 	GameEnd
 }
 
+public enum ControllerStyles{
+	Snake,
+	PlayAgain
+}
+
 public class MenuManager : MonoBehaviour {
 	
 	public static GameState gameState = GameState.ChooseArena;
@@ -95,9 +100,7 @@ public class MenuManager : MonoBehaviour {
 				timer = countdownTime;
 				gameState = GameState.GameEnd;
 				for(int i = 0; i < jovios.GetPlayerCount(); i++){
-					JoviosControllerStyle controllerStyle = new JoviosControllerStyle();
-					controllerStyle.SetBasicButtons("Would you like to play this game again?", new string[] {"Play Again!"});
-					jovios.SetControls(jovios.GetPlayer(i).GetUserID(), controllerStyle);
+					SetControls(jovios.GetPlayer(i).GetUserID(), ControllerStyles.PlayAgain);
 				}
 				Transform po = GameObject.Find ("PlayerObjects").transform;
 				for(int i = 0; i < po.childCount; i++){
@@ -136,7 +139,21 @@ public class MenuManager : MonoBehaviour {
 		if (is_loadingNewGame){
 			GUI.Box(new Rect(Screen.width - Screen.width/5,0,Screen.width/5,Screen.height/5), "Loading New Game");
 		}
-		GUI.Box(new Rect(0,Screen.height - Screen.height/8,Screen.width/5,Screen.height/8), "Game Code\n" + jovios.GetGameName());
+		GUI.Box(new Rect(0,Screen.height - Screen.height/8,Screen.width/5,Screen.height/8), "Game Code\n" + jovios.gameCode);
+	}
+
+	public static void SetControls(JoviosUserID juid, ControllerStyles cs){
+		JoviosControllerStyle controllerStyle = new JoviosControllerStyle();
+		switch(cs){
+		case ControllerStyles.PlayAgain:
+			controllerStyle.AddButton1(new Vector2(0, 0), new Vector2(1.5F, 1.5F), "mc", "Play Again!", "Play Again!");
+			break;
+		case ControllerStyles.Snake:
+			controllerStyle.AddJoystick(new Vector2(0.7F, 1F), new Vector2(1.2F, 1.8F), "bl", "left", "left");
+			controllerStyle.AddButton1(new Vector2 (1, 0), Vector2.one, "mc", "Attack!", "Attack");
+			break;
+		}
+		GameManager.jovios.SetControls(juid, controllerStyle);
 	}
 		
 	
