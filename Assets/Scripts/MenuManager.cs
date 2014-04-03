@@ -146,7 +146,7 @@ public class MenuManager : MonoBehaviour {
 		JoviosControllerStyle controllerStyle = new JoviosControllerStyle();
 		switch(cs){
 		case ControllerStyles.PlayAgain:
-			controllerStyle.AddButton1(new Vector2(0, 0), new Vector2(1.5F, 1.5F), "mc", "Play Again!", "Play Again!");
+			controllerStyle.AddButton1(new Vector2(0, 0), new Vector2(1.5F, 1.5F), "mc", "Play!", "Play");
 			break;
 		case ControllerStyles.Snake:
 			controllerStyle.AddJoystick(new Vector2(0.7F, 1F), new Vector2(1.2F, 1.8F), "bl", "left", "left");

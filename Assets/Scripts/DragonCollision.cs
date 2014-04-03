@@ -16,7 +16,7 @@ public class DragonCollision : MonoBehaviour {
 	
 	void OnTriggerEnter(Collider other){
 		if(other.name == "Food(Clone)"){
-			GameManager.score[jovios.GetPlayer(playerNumber).GetUserID().GetIDNumber()] += 3;
+			GameManager.score[jovios.GetPlayer(playerNumber).GetUserID().GetIDNumber()] += 1;
 			if(GameManager.winner[0] > -1){
 				if(GameManager.score[jovios.GetPlayer(playerNumber).GetUserID().GetIDNumber()] > GameManager.score[jovios.GetPlayer(playerNumber).GetUserID().GetIDNumber()]){
 					for(int i = 0; i < jovios.GetPlayerCount(); i++){

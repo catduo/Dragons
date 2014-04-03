@@ -75,7 +75,7 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 		JoviosControllerStyle controllerStyle = new JoviosControllerStyle();
 		switch(button){
 			
-		case "Play Again!":
+		case "Play":
 			switch(MenuManager.gameState){
 			case GameState.Countdown:
 				Ready ();
@@ -84,7 +84,7 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 				
 			case GameState.ChooseArena:
 				Ready ();
-				MenuManager.SetControls(myPlayer, ControllerStyles.PlayAgain);
+				MenuManager.SetControls(myPlayer, ControllerStyles.Snake);
 				jovios.SetControls(myPlayer, controllerStyle);
 				GameManager.ChooseArena(1);
 				break;
@@ -135,7 +135,6 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 	public void StartRound(){
 		status.text = "0";
 		status.color = Color.white;
-		MenuManager.SetControls(jovios.GetPlayer(myPlayer).GetUserID(), ControllerStyles.Snake);
 	}
 	
 	public void Reset(int newPlayerNumber){
