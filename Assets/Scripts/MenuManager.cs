@@ -100,7 +100,7 @@ public class MenuManager : MonoBehaviour {
 				timer = countdownTime;
 				gameState = GameState.GameEnd;
 				for(int i = 0; i < jovios.GetPlayerCount(); i++){
-					SetControls(jovios.GetPlayer(i).GetUserID(), ControllerStyles.PlayAgain);
+					jovios.SetControls(jovios.GetPlayer(i).GetUserID(), "PlayAgain");
 				}
 				Transform po = GameObject.Find ("PlayerObjects").transform;
 				for(int i = 0; i < po.childCount; i++){
@@ -128,7 +128,7 @@ public class MenuManager : MonoBehaviour {
 			
 			
 		case GameState.GameEnd:
-			GUI.Box(new Rect(Screen.width - Screen.width/5,0,Screen.width/5,Screen.height/5), "The Winner is " + jovios.GetPlayer(GameManager.winner[0]).GetPlayerName());
+			GUI.Box(new Rect(Screen.width - Screen.width/5,0,Screen.width/5,Screen.height/5), "Game Over\nFinal Scores");
 			break;
 			
 			

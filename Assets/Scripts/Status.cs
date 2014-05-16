@@ -35,9 +35,9 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 		status.color = Color.red;
 		status.text = "X";
 		JoviosControllerStyle controllerStyle = new JoviosControllerStyle();
-		MenuManager.SetControls(jovios.GetPlayer(myPlayer).GetUserID(), ControllerStyles.PlayAgain);
+		jovios.SetControls(myPlayer, "PlayAgain");
 		if(!GameManager.score.ContainsKey(myPlayer.GetIDNumber())){
-			GameManager.score.Add(jovios.GetPlayer(myPlayer).GetUserID().GetIDNumber(), 0);
+			GameManager.score.Add(myPlayer.GetIDNumber(), 0);
 		}
 		jovios.AddControllerListener(this, myPlayer);
 	}
@@ -75,23 +75,18 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 		JoviosControllerStyle controllerStyle = new JoviosControllerStyle();
 		switch(button){
 			
-		case "Play":
+		case "PlayAgain":
 			switch(MenuManager.gameState){
 			case GameState.Countdown:
 				Ready ();
-				StartRound();
 				break;
 				
 			case GameState.ChooseArena:
 				Ready ();
-				MenuManager.SetControls(myPlayer, ControllerStyles.Snake);
-				jovios.SetControls(myPlayer, controllerStyle);
-				GameManager.ChooseArena(1);
 				break;
 				
 			case GameState.GameOn:
 				Ready ();
-				StartRound();
 				break;
 				
 			case GameState.GameEnd:
@@ -99,8 +94,6 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 					GameManager.EndRound();
 				}
 				Ready ();
-				MenuManager.SetControls(myPlayer, ControllerStyles.Snake);
-				GameManager.ChooseArena(1);
 				break;
 				
 			case GameState.Menu:
@@ -119,6 +112,7 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 	}
 	
 	public void Ready(){
+		jovios.SetControls(myPlayer, "Dragon");
 		status.text = "O";
 		status.color = Color.green;
 		if(jovios.GetPlayer(myPlayer).GetPlayerObject(0) == null){
@@ -130,9 +124,13 @@ public class Status : MonoBehaviour, IJoviosControllerListener {
 			jovios.GetPlayer(myPlayer).AddPlayerObject(newPlayerObject);
 		}
 		is_ready = true;
+		if(MenuManager.gameState == GameState.ChooseArena){
+			StartRound();
+		}
 	}
 	
 	public void StartRound(){
+		GameManager.ChooseArena(1);
 		status.text = "0";
 		status.color = Color.white;
 	}

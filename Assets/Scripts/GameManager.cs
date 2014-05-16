@@ -29,9 +29,11 @@ public class GameManager : MonoBehaviour, IJoviosPlayerListener {
 		jovios = Jovios.Create();
 	}
 
+
+	public List<GameObject> controls = new List<GameObject>();
 	// Use this for initialization
 	void Start () {
-		jovios.StartServer("snak");
+		jovios.StartServer(controls, new List<Texture2D>(), "Snake");
 		foodSpawnTime = Time.time;
 		modifiers = GameObject.Find ("Modifiers").transform;
 		playerObjects = GameObject.Find ("PlayerObjects").transform;
